@@ -1,6 +1,6 @@
 # PayFlow
 
-PayFlow é um gateway de pagamentos moderno, flexível e extensível, desenvolvido em .NET 9, com integração em múltiplos provedores de pagamento e conteinerizado com Docker.
+PayFlow é um gateway de pagamentos leve, flexível e extensível, desenvolvido em .NET 9, com integração em múltiplos provedores de pagamento e conteinerizado com Docker.
 
 ---
 
