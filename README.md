@@ -74,20 +74,23 @@ payflow/ │ ├── core/ │   ├── data/ │   │   └── PayFlow
 
 1. **Clone o repositório**
    git clone <url-do-repositorio> cd <nome-da-pasta>
+
+2. Abra o Terminal do Visual Studio ou VS Code, e acessa diretório raiz:
+   cd payflow
    
-2. **Suba os containers**
-   docker-compose up -d
+3. **Compile os containers, suba e informe -d para deixar o terminal aberta para os próximos comandos**
+   docker-compose up --build -d
 
+4; Execute o comando abaixo para instalar o .Net Entity Framework no container (necessário para executar o comando na sequência gerar o banco e estrutura através da migrations.
+   docker run --rm --network payflow_default -v ${PWD}:/app -w /app mcr.microsoft.com/dotnet/sdk:9.0 sh -c 'dotnet tool install --global dotnet-ef && 
 
-3. **Aplique as migrations do banco de dados**
-   > Deixe os containers rodando e, em outro terminal, execute:
+5. Execute o comando para gerar o banco de dados SQL Server no outro container através do code first (pode executdo junto com a linha de cima)
+     export PATH="$PATH:/root/.dotnet/tools" && dotnet ef database update --startup-project . --project .'
 
-   docker run --rm --network payflow_default -v ${PWD}:/app -w /app mcr.microsoft.com/dotnet/sdk:9.0 sh -c 'dotnet tool install --global dotnet-ef && export PATH="$PATH:/root/.dotnet/tools" && dotnet ef database update --startup-project . --project .'
+     > No Windows PowerShell, use `${PWD}`.  
+    > No Linux/Mac, use `$(pwd)`.
 
-   > No Windows PowerShell, use `${PWD}`.  
-> No Linux/Mac, use `$(pwd)`.
-
-4. **Acesse a API**
+6. **Acesse a API**
 - Swagger UI: [http://localhost:8080/swagger](http://localhost:8080/swagger)
 
 5. **Testes**
@@ -97,8 +100,8 @@ payflow/ │ ├── core/ │   ├── data/ │   │   └── PayFlow
 
 ## ⚙️ Configurações Importantes
 
-- **String de conexão**:  
-Definida em `appsettings.json` e no `docker-compose.yml` para garantir acesso ao SQL Server do container.
+- **String de conexão, caso deseja alterar**:  
+Altere em `appsettings.json` e no `docker-compose.yml` para garantir acesso ao SQL Server do container.
 
 - **Endpoints dos provedores**:  
 Configurados em `appsettings.json` na seção `ProviderUrls`.  
