@@ -1,4 +1,7 @@
-﻿public class SecurePayPayload
+﻿namespace PayFlow.Core.Models;
+
+
+public class SecurePayPayload
 {
     public int amount_cents { get; set; }
     public string currency_code { get; set; }

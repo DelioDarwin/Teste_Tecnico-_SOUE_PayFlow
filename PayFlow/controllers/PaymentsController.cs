@@ -6,36 +6,42 @@ using System.Linq;
 using Microsoft.EntityFrameworkCore;
 using PayFlow.Core.Data;
 
-namespace PayFlow.Controllers
+namespace PayFlow.Controllers;
+
+[ApiController]
+[Route("payments")]
+public class PaymentsController : ControllerBase
 {
-    [ApiController]
-    [Route("payments")]
-    public class PaymentsController : ControllerBase
+    private readonly PaymentService _paymentService;
+
+    public PaymentsController(PaymentService paymentService)
     {
-        private readonly PaymentService _paymentService;
+        _paymentService = paymentService;
+    }
 
-        public PaymentsController(PaymentService paymentService)
+    [HttpPost]
+    public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
+    {
+        if (request == null || request.amount <= 0 || string.IsNullOrWhiteSpace(request.currency))
         {
-            _paymentService = paymentService;
+            return BadRequest(new { error = "Erro ao processar o pagamento." });
         }
 
-        [HttpPost]
-        public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequest request)
+        try
         {
-            if (request == null || request.Amount <= 0 || string.IsNullOrWhiteSpace(request.Currency))
-            {
-                return BadRequest(new { error = "Invalid payment request." });
-            }
-
-            try
-            {
-                var response = await _paymentService.ProcessPaymentAsync(request);
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(502, new { error = "Payment processing failed.", details = ex.Message });
-            }
+            var response = await _paymentService.ProcessPaymentAsync(request);
+            return Ok(response);
         }
+        catch (Exception ex)
+        {
+            return StatusCode(502, new { error = "Erro ao processar o pagamento.", details = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllPayments()
+    {
+        var payments = await _paymentService.GetAllPaymentsAsync();
+        return Ok(payments);
     }
 }

@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using PayFlow;
+using PayFlow.Core.Data;
 using PayFlow.Core.Interfaces;
 using PayFlow.Core.Services;
-using Microsoft.EntityFrameworkCore;
-using PayFlow.Core.Data;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -37,6 +39,17 @@ builder.Services.AddDbContext<PayFlowDbContext>(options =>
         sqlOptions => sqlOptions.EnableRetryOnFailure()
     ));
 
+builder.Services.AddCors(options =>
+    {
+        options.AddDefaultPolicy(policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod().AllowAnyHeader();
+           
+        });
+    });
+
 builder.WebHost.UseUrls("http://*:8080");
 
 var app = builder.Build();
@@ -47,8 +60,10 @@ var app = builder.Build();
     app.UseSwaggerUI();
 //}
 
+
 app.UseHttpsRedirection();
 app.UseAuthorization();
+app.UseCors();
 app.MapControllers();
 app.Run();          
 
@@ -58,3 +73,4 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<PayFlowDbContext>();
     dbContext.Database.Migrate();
 }   
+    

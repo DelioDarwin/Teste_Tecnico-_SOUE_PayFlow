@@ -5,6 +5,8 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 
+namespace PayFlow;
+
 public class FastPayProvider : IPaymentProvider
 {
     private readonly HttpClient _httpClient;
@@ -14,7 +16,7 @@ public class FastPayProvider : IPaymentProvider
     public FastPayProvider(HttpClient httpClient, IConfiguration config)
     {
         _httpClient = httpClient;
-        _endpointUrl = config["ProviderUrls:FastPay"];
+        _endpointUrl = config["ProviderUrls:FastPay"] ?? throw new ArgumentNullException(nameof(config), "FastPay endpoint URL configuration is missing.");
     }
 
     public async Task<PaymentResponse> ProcessPaymentAsync(PaymentRequest request)
@@ -22,9 +24,9 @@ public class FastPayProvider : IPaymentProvider
         // Map PaymentRequest to FastPayPayload
         var payload = new FastPayPayload
         {
-            transaction_amount = request.Amount,
-            currency = request.Currency,
-            payer = new Payer { email = request.PayerEmail ?? "cliente@teste.com" },
+            transaction_amount = request.amount,
+            currency = request.currency,
+            payer = new Payer("cliente@teste.com"),
             installments = 1,
             description = "Compra via FastPay"
         };
@@ -40,15 +42,15 @@ public class FastPayProvider : IPaymentProvider
         var fastPayResponse = await response.Content.ReadFromJsonAsync<FastPayResponse>();
 
         // Calcular taxa: 3,49% do valor
-        var fee = decimal.Round(request.Amount * 0.0349m, 2);
-        var netAmount = decimal.Round(request.Amount - fee, 2);
+        var fee = decimal.Round(request.amount * 0.0349m, 2);
+        var netAmount = decimal.Round(request.amount - fee, 2);
 
         return new PaymentResponse
         {
             ExternalId = fastPayResponse?.id ?? "",
             Status = fastPayResponse?.status ?? "error",
             Provider = ProviderName,
-            GrossAmount = request.Amount,
+            GrossAmount = request.amount,
             Fee = fee,
             NetAmount = netAmount,
             StatusDetail = fastPayResponse?.status_detail ?? string.Empty
