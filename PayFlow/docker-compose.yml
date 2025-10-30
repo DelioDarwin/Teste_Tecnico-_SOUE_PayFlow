@@ -1,0 +1,26 @@
+﻿services:
+  payflow:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=db;Database=payflowdb;User Id=sa;Password=PayFlow_12345;TrustServerCertificate=True
+    depends_on:
+      - db
+
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=PayFlow_12345
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - payflow-db-data:/var/opt/mssql
+
+volumes:
+  payflow-db-data:
